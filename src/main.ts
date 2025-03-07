@@ -1,8 +1,8 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, Notification } from "electron";
 import path from "node:path";
 import started from "electron-squirrel-startup";
 import Pushy from "pushy-electron";
-import {config} from "dotenv";
+import { config } from "dotenv";
 config();
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -32,7 +32,7 @@ const createWindow = () => {
   // mainWindow.webContents.openDevTools();
 
   mainWindow.webContents.on("did-finish-load", () => {
-    Pushy.alert(mainWindow, "Pushy device token: " + process.env.PUSHY_APP_ID); 
+    Pushy.alert(mainWindow, "Pushy device token: " + process.env.PUSHY_APP_ID);
     Pushy.register({ appId: process.env.PUSHY_APP_ID })
       .then(async (deviceToken) => {
         // Display an alert with device token
@@ -46,16 +46,17 @@ const createWindow = () => {
             deviceToken,
           }),
         });
-        Pushy.alert(mainWindow, "Pushy device token: " + deviceToken);
+        // Pushy.alert(mainWindow, "Pushy device token: " + deviceToken);
       })
       .catch((err) => {
         // Display error dialog
-        Pushy.alert(mainWindow, "Pushy registration error: " + err.message);
+        // Pushy.alert(mainWindow, "Pushy registration error: " + err.message);
       });
     Pushy.setNotificationListener((data) => {
       // Display an alert with the "message" payload value
       console.log(data);
-      Pushy.alert(mainWindow, "Received notification: " + JSON.stringify(data));
+      mainWindow.webContents.send("fromMain", { message: data.message });
+      // Pushy.alert(mainWindow, "Received notification: " + JSON.stringify(data));
     });
     Pushy.listen();
   });
