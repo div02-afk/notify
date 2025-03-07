@@ -1,12 +1,16 @@
-import { app, BrowserWindow, ipcMain, Notification } from "electron";
-import path from "node:path";
-import started from "electron-squirrel-startup";
-import Pushy from "pushy-electron";
 import { config } from "dotenv";
+import { app, BrowserWindow } from "electron";
+import started from "electron-squirrel-startup";
+import path from "node:path";
+import Pushy from "pushy-electron";
 config();
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
+}
+
+interface notificationData {
+  message: string;
 }
 
 const createWindow = () => {
@@ -52,7 +56,7 @@ const createWindow = () => {
         // Display error dialog
         // Pushy.alert(mainWindow, "Pushy registration error: " + err.message);
       });
-    Pushy.setNotificationListener((data) => {
+    Pushy.setNotificationListener((data: notificationData) => {
       // Display an alert with the "message" payload value
       console.log(data);
       mainWindow.webContents.send("fromMain", { message: data.message });
